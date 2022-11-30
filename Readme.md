@@ -13,5 +13,8 @@
     - Express
     - Mongodb
 
+### EndPoints
+    Products - /shop
+
 E-commerce em produção - https://lnkd.in/dJhtH3UJ
 Repositório front-end - https://github.com/Wellyngtonkuhn/E-commerce
