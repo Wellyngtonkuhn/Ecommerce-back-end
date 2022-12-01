@@ -10,6 +10,10 @@ route.use(
 
 route.use(express.json());
 
+route.get('/', (req, res) => {
+    res.send('Bem vindo a api de ecommerce')
+})
+
 // Rota para cadastrar os produtos
 route.post("/newProduct", async (req, res) => {
   const { nome, modelo, tamanho, preco, quantidade, marca,descricao, url, imagens } = req.body;
