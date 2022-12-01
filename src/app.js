@@ -1,16 +1,13 @@
-const express = require("express");
-const routes = require("./routes/route");
+import "dotenv/config";
+import express from "express";
+import route from "./routes/route.js";
+const port = 3004 || "";
 const app = express();
 
-const port = 3004 || "";
+// Utiliza todas as rotas criadas
+app.use(route);
 
-app.use(
-  express.urlencoded({
-    extended: true,
-  })
-);
-
-app.use(routes);
+// Iniciando o App
 
 app.listen(port, () => {
   console.log(`Listening on port http://localhost:${port}`);

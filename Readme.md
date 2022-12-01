@@ -12,6 +12,7 @@
     - Node
     - Express
     - Mongodb
+    - Mongoose
 
 ### EndPoints
     Products - /shop
