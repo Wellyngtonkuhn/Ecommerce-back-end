@@ -2,14 +2,10 @@
   "name": "ecommerce-backend",
   "version": "1.0.0",
   "description": "Esse back-end foi criado para meu projeto de conclusão de curso (TCC).",
-  "main": "./src/index.js",
+  "main": "./src/app.js",
   "type": "module",
-  "engines": {
-    "node": "14.x"
-  },
   "scripts": {
-    "start": "node ./src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon ./src/app.js"
   },
   "author": "Wellyngton Kuhn",
   "license": "ISC",
