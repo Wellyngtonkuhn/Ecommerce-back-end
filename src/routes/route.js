@@ -67,7 +67,8 @@ route.post('/login', async (req, res) => {
     
       return res.status(200).json({
         user: {
-        name: userExist.userName,
+        id: userExist._id,
+        userName: userExist.userName,
         email: userExist.email
       },
       token: jwt.sign(
@@ -107,9 +108,6 @@ route.post('/register', async (req, res) => {
     return res.status(401).json({ message: 'email já utilizado '})
 })
 
-// Rota para testar o JWT
-route.get('/teste', AuthMidleware, (req, res)=>{
-  return res.json({ message: 'bem vindo a rota protegida'})
-})
+//Rota de Checkout
 
 export default route;
