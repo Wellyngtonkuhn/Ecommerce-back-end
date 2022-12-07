@@ -6,6 +6,7 @@ import AuthMidleware from "../middleware/AuthMidleware.js"
 
 import { ProductService } from "../services/products/index.js";
 import { UserRegisterService } from "../services/users/userRegister.js";
+import { UserOrderService } from '../services/users/checkoutService/index.js'
 
 
 const route = express.Router();
@@ -66,7 +67,8 @@ route.post('/login', async (req, res) => {
     
       return res.status(200).json({
         user: {
-        name: userExist.userName,
+        id: userExist._id,
+        userName: userExist.userName,
         email: userExist.email
       },
       token: jwt.sign(
@@ -76,7 +78,6 @@ route.post('/login', async (req, res) => {
         )
     })
 })
-
 
 // Register
 route.post('/register', async (req, res) => {
@@ -106,9 +107,23 @@ route.post('/register', async (req, res) => {
     return res.status(401).json({ message: 'email já utilizado '})
 })
 
-// Rota para testar o JWT
-route.get('/teste', AuthMidleware, (req, res)=>{
-  return res.json({ message: 'bem vindo a rota protegida'})
+// Validar Token
+route.post('/verifyingToken', (req, res, next) => {
+  // To do
+})
+
+// Rota de checkout TO DO - Implementar Gatway the pagamento
+route.post('/checkout', AuthMidleware, async (req, res) => {
+    const {userId, product} = req.body   
+    const orderItems = {userId, product}
+
+    const userOrderService = new UserOrderService()
+  // Implementar método de pagamento
+  // Diminuir os itens do estoque
+    if(orderItems){
+      const order = await userOrderService.createOrder(orderItems)
+      return res.status(200).json({message: 'Compra realizada', order})
+    }
 })
 
 export default route;

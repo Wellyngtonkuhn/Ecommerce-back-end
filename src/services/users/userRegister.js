@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import userRegisterModel from "../../schema/users/userRegister.js";
+import userRegisterModel from '../../schema/users/userRegisterSchema/index.js'
 
 export class UserRegisterService {
   async createUser(user) {
