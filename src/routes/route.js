@@ -67,8 +67,7 @@ route.post('/login', async (req, res) => {
     
       return res.status(200).json({
         user: {
-        id: userExist._id,
-        userName: userExist.userName,
+        name: userExist.userName,
         email: userExist.email
       },
       token: jwt.sign(
@@ -78,6 +77,7 @@ route.post('/login', async (req, res) => {
         )
     })
 })
+
 
 // Register
 route.post('/register', async (req, res) => {
@@ -107,23 +107,9 @@ route.post('/register', async (req, res) => {
     return res.status(401).json({ message: 'email já utilizado '})
 })
 
-// Validar Token
-route.post('/verifyingToken', (req, res, next) => {
-  // To do
-})
-
-// Rota de checkout TO DO - Implementar Gatway the pagamento
-route.post('/checkout', AuthMidleware, async (req, res) => {
-    const {userId, product} = req.body   
-    const orderItems = {userId, product}
-
-    const userOrderService = new UserOrderService()
-  // Implementar método de pagamento
-  // Diminuir os itens do estoque
-    if(orderItems){
-      const order = await userOrderService.createOrder(orderItems)
-      return res.status(200).json({message: 'Compra realizada', order})
-    }
+// Rota para testar o JWT
+route.get('/teste', AuthMidleware, (req, res)=>{
+  return res.json({ message: 'bem vindo a rota protegida'})
 })
 
 export default route;
