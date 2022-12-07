@@ -66,7 +66,8 @@ route.post('/login', async (req, res) => {
     
       return res.status(200).json({
         user: {
-        name: userExist.userName,
+        id: userExist._id,
+        userName: userExist.userName,
         email: userExist.email
       },
       token: jwt.sign(
@@ -76,7 +77,6 @@ route.post('/login', async (req, res) => {
         )
     })
 })
-
 
 // Register
 route.post('/register', async (req, res) => {
@@ -104,6 +104,11 @@ route.post('/register', async (req, res) => {
        })
     }
     return res.status(401).json({ message: 'email já utilizado '})
+})
+
+// Validar Token
+route.post('/verifyingToken', (req, res, next) => {
+  // To do
 })
 
 // Rota para testar o JWT
