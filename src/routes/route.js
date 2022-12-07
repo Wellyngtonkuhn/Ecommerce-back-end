@@ -64,8 +64,8 @@ route.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Email ou senha incorreto!'})
     }
     
-    return res.status(200).json({
-      user: {
+      return res.status(200).json({
+        user: {
         name: userExist.userName,
         email: userExist.email
       },
@@ -88,12 +88,20 @@ route.post('/register', async (req, res) => {
     const emailExist = await userRegisterService.findByEmail(email)
 
     if(!emailExist){
-      await userRegisterService.createUser(user)
-       return res.status(200).json({ 
-        message: 'Usuário cadastrado com sucesso!', 
-        userName,
-        email
-      })
+      const userAdded = await userRegisterService.createUser(user)
+       return res.status(200).json({
+        user:{
+          id: userAdded._id,
+          userName: userAdded.userName,
+          email: userAdded.email
+        },
+        token: jwt.sign(
+          {id: userAdded._id},
+          secret,
+          {expiresIn: expireIn}
+        ),
+        message: 'Usuário cadastrado'
+       })
     }
     return res.status(401).json({ message: 'email já utilizado '})
 })
