@@ -124,17 +124,25 @@ route.post('/register', async (req, res) => {
     return res.status(400).json({ message: 'email já utilizado '})
 })
 
-  //Rotas do dashboard do usuário
+    //Rotas do dashboard do usuário
 
 //Rota para obter todos os pedidos do usuário
-route.get('/orders', AuthMidleware, async (req, res) => {
-    const id = req.body
-   
+route.get('/orders/:userId', AuthMidleware, async (req, res) => {
+    const { userId } = req.params
+
+    const userRegisterService = new UserRegisterService()
     const getOrdersService = new GetOrdersService()
-  // Fazer verificação de id, ele está como objeto
-    if(id){
-      const getOrders = await getOrdersService.getOrders(id) 
-      return res.status(200).json(getOrders)
+
+    try {
+      await userRegisterService.findById(userId)
+        try {
+            const userOrder = await getOrdersService.getOrders(userId)
+            return res.status(200).json(userOrder)
+        } catch (error) {
+          return res.status(404).json({message: 'Nenhum pedido encontrado'})
+        }
+    } catch (error) {
+      return res.status(404).json({message: 'Usuário não existe em nossa base de dados'})
     }
 })
 
@@ -149,8 +157,6 @@ route.get('/ordersItems', AuthMidleware, async (req, res) => {
 }
 return res.status(400).json({ message: 'Está faltando os ids dos produtos que o usúario comprou'})
 })
-
-
 
 
 export default route;

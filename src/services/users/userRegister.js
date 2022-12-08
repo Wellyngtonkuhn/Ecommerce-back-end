@@ -6,6 +6,10 @@ export class UserRegisterService {
     return await userRegisterModel.create(user);
   }
 
+  async findById(id){
+    return await userRegisterModel.findById({_id: ObjectId(id)})
+  }
+
   async findByEmail(email) {
     return await userRegisterModel.findOne({ email: email });
   }
