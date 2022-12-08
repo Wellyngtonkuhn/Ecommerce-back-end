@@ -13,9 +13,17 @@
     - Express
     - Mongodb
     - Mongoose
+    - JWT Token
+    - Bcrypt
 
 ### EndPoints
-    Products - /shop
+    Products - /products
+    Single Product - /products/:id
+    Checkout - /checkout
+    Login - /login
+    Register - /register
+    Pedidos do usuário - /orders
+    Detalhes dos produtos do pedido do usuário - /ordersItems
 
 E-commerce em produção - https://lnkd.in/dJhtH3UJ
 Repositório front-end - https://github.com/Wellyngtonkuhn/E-commerce
