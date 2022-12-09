@@ -6,9 +6,9 @@ import AuthMidleware from "../middleware/AuthMidleware.js"
 
 import { ProductService } from "../services/products/index.js";
 import { UserRegisterService } from "../services/users/userRegister.js";
-import { UserOrderService } from '../services/users/checkoutService/index.js'
+import { UserCheckOutService } from '../services/users/checkoutService/index.js'
 import { GetOrdersService } from "../services/users/getOrdersService/index.js"
-import { GetOrdersItemsService } from "../services/users/getOrdersService/index.js"
+
 
 const route = express.Router();
 
@@ -57,18 +57,21 @@ route.get("/products/:id", async (req, res) => {
 
 //Rota de Checkout
 route.post('/checkout', AuthMidleware, async (req, res) => {
-  const { product, userId } = req.body
-  const orderItems = { product, userId }
+  const { userId, productImg, totalPrice, shipped, orderStatus, paymentStatus } = req.body
+  const orderItems = { userId, productImg, totalPrice, shipped, orderStatus, paymentStatus }
 
-  const userOrderService = new UserOrderService()
+  const userCheckOutService = new UserCheckOutService()
 
-// TO DO - Implementar método de pagamento
-
-  if(orderItems.product[0].id !== ""){
-    const order = await userOrderService.createOrder(orderItems)
-    return res.status(201).json({ message: 'Pedido realizado', order})
-  }
-  return res.status(401).json({ message: 'Campos obrigatórios'})
+    // TO DO - Implementar método de pagamento
+    if(orderItems.userId !== ''){
+      try {
+        const order = await userCheckOutService.createOrder(orderItems)
+        return res.status(201).json({ message: 'Pedido realizado', order})
+      } catch (err) {
+          return res.status(401).json({ message: err})
+        }
+    }
+    return res.status(401).json({ message: 'Campos obrigatórios'})
 })
 
 // Login
@@ -124,39 +127,19 @@ route.post('/register', async (req, res) => {
     return res.status(400).json({ message: 'email já utilizado '})
 })
 
-    //Rotas do dashboard do usuário
-
+  //Rotas do dashboard do usuário
+  
 //Rota para obter todos os pedidos do usuário
 route.get('/orders/:userId', AuthMidleware, async (req, res) => {
     const { userId } = req.params
-
-    const userRegisterService = new UserRegisterService()
     const getOrdersService = new GetOrdersService()
 
     try {
-      await userRegisterService.findById(userId)
-        try {
-            const userOrder = await getOrdersService.getOrders(userId)
-            return res.status(200).json(userOrder)
-        } catch (error) {
-          return res.status(404).json({message: 'Nenhum pedido encontrado'})
-        }
-    } catch (error) {
-      return res.status(404).json({message: 'Usuário não existe em nossa base de dados'})
+        const userOrder = await getOrdersService.getOrders(userId)
+          return res.status(200).json(userOrder)
+    } catch{
+       return res.status(404).json({message: 'Usuário não existe em nossa base de dados'})
     }
 })
-
-// Rota para obter os detalhes do pedido do usuário
-route.get('/ordersItems', AuthMidleware, async (req, res) => {
-  const { productIds } = req.body // array com os ids dos produtos que o usuário comprou
-
-  const getOrdersItemsService = new GetOrdersItemsService()
-  if(productIds.length > 0){
-    const allProducts = await getOrdersItemsService.getOrdersItems(productIds)
-    return res.status(200).json(allProducts)
-}
-return res.status(400).json({ message: 'Está faltando os ids dos produtos que o usúario comprou'})
-})
-
 
 export default route;

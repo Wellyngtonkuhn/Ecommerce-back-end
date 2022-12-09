@@ -1,7 +1,7 @@
-import userOrderModel from "../../../schema/users/userOrdersShema/index.js";
+import userCheckOutShema from "../../../schema/users/userCheckOutShema/index.js";
 
-export class UserOrderService {
+export class UserCheckOutService {
   async createOrder(order) {
-    return await userOrderModel.create(order);
+    return await userCheckOutShema.create(order);
   }
 }
