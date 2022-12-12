@@ -57,12 +57,13 @@ route.get("/products/:id", async (req, res) => {
 
 //Rota de Checkout
 route.post('/checkout', AuthMidleware, async (req, res) => {
-  const { userId, productImg, totalPrice, shipped, orderStatus, paymentStatus } = req.body
-  const orderItems = { userId, productImg, totalPrice, shipped, orderStatus, paymentStatus }
+  const { userId, product, totalPrice, shipped, orderStatus, paymentStatus } = req.body
+  const orderItems = { userId, product, totalPrice, shipped, orderStatus, paymentStatus }
 
   const userCheckOutService = new UserCheckOutService()
 
     // TO DO - Implementar método de pagamento
+   
     if(orderItems.userId !== ''){
       try {
         const order = await userCheckOutService.createOrder(orderItems)

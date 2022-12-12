@@ -3,8 +3,8 @@ import Mongoose from "../../../db/index.js";
 const userCheckOutShema = new Mongoose.Schema(
   {
     userId: String,
-    productImg: Array,
-    totalPrice: String,
+    product: Array,
+    totalPrice: Number,
     shipped: String,
     orderStatus: String,
     paymentStatus: String,

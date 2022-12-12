@@ -1,4 +1,4 @@
-import Mongoose from '../../db/index.js';
+import Mongoose from "../../db/index.js";
 
 const productSchema = new Mongoose.Schema(
   {
