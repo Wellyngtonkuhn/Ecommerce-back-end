@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import userOrderSchema from "../../../schema/users/userCheckOutShema/index.js";
+import userOrderSchema from "../../../schema/users/userCheckOutSchema/index.js";
 
 export class GetOrdersService {
   async getOrders(id) {

@@ -1,6 +1,6 @@
 import Mongoose from "../../../db/index.js";
 
-const userCheckOutShema = new Mongoose.Schema(
+const userCheckOutSchema = new Mongoose.Schema(
   {
     userId: String,
     product: Array,
@@ -15,4 +15,4 @@ const userCheckOutShema = new Mongoose.Schema(
   }
 );
 
-export default Mongoose.model("userOders", userCheckOutShema, "userOders");
+export default Mongoose.model("userOders", userCheckOutSchema, "userOders");

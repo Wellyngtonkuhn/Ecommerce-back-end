@@ -8,6 +8,8 @@ import { ProductService } from "../services/products/index.js";
 import { UserRegisterService } from "../services/users/userRegister.js";
 import { UserCheckOutService } from '../services/users/checkoutService/index.js'
 import { GetOrdersService } from "../services/users/getOrdersService/index.js"
+import { UserFavoriteService } from "../services/users/favoriteService/index.js"
+
 
 
 const route = express.Router();
@@ -140,6 +142,31 @@ route.get('/orders/:userId', AuthMidleware, async (req, res) => {
           return res.status(200).json(userOrder)
     } catch{
        return res.status(404).json({message: 'Usuário não existe em nossa base de dados'})
+    }
+})
+
+//Rota para adicionar favorito
+route.post('/favorites', AuthMidleware, async(req, res) => {
+    const { userId, productId, img, name, price } = req.body
+    const favorite = { userId, productId, img, name, price }
+
+    const userFavoriteService = new UserFavoriteService()
+
+    if(favorite.userId){
+      const addFavorite = await userFavoriteService.addFavorite(favorite)
+      return res.status(201).json({ message: 'Ok', addFavorite})
+    }
+    return res.status(401).json({ message: 'O Id de usuário é obrigatório'})
+})
+
+//Rota para obter os favoritos do usuário
+route.get('/favorites/:id', AuthMidleware, async (req, res) => {
+ const { id } = req.params
+ const userFavoriteService = new UserFavoriteService()
+
+  if(id){
+      const favorites = await userFavoriteService.getFavorites(id)
+        return res.status(200).json({ message: 'ok', favorites })
     }
 })
 
