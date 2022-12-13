@@ -86,7 +86,7 @@ route.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Email ou senha incorreto!'})
     }
     
-      return res.status(200).json({
+      return res.status(200).send('Olá').json({
         user: {
         id: userExist._id,
         userName: userExist.userName,

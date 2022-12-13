@@ -8,6 +8,7 @@ const app = express();
 
 app.use(cors())
 
+
 // Utiliza todas as rotas criadas
 app.use(route);
 
