@@ -221,7 +221,7 @@ route.get('/user/:id', AuthMidleware, async (req, res) =>{
     if(!userExist) {
       return res.status(404).json({ message: 'Usuário inexistente '})
     }
-    return res.status(200).json({ userExist })
+    return res.status(200).json( userExist )
   } catch (error) {
     return res.status(500).json({ error })
   }
