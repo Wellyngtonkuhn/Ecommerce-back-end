@@ -230,8 +230,8 @@ route.get('/user/:id', AuthMidleware, async (req, res) =>{
 //Rota para Editar um usuário
 route.patch('/user/:id', AuthMidleware, async (req, res) => {
   const { id } = req.params
-  const { name, email, cellPhone, cpf, genre, cep, addressee, street, number, complement, city, state, reference } = req.body
-  const user = { name, email, cellPhone, cpf, genre, cep, addressee, street, number, complement, city, state, reference }
+  const { name, email, cellPhone, cpf, genre, cep, addressee, street, number, complement, district, city, state, reference } = req.body
+  const user = { name, email, cellPhone, cpf, genre, cep, addressee, street, number, complement, district, city, state, reference }
   const userRegisterService = new UserRegisterService()
 
   try {

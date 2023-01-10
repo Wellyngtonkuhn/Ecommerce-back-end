@@ -13,6 +13,7 @@ const userRegisterSchema = new Mongoose.Schema(
     street: String,
     number: String,
     complement: String,
+    district: String,
     city: String,
     state: String,
     reference: String
