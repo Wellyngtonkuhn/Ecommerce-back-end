@@ -2,8 +2,11 @@ import Mongoose from "../../../db/index.js";
 
 const userRegisterSchema = new Mongoose.Schema(
   {
-    userName: String,
+    name: String,
     email: String,
+    cellPhone: String,
+    cpf: String,
+    genre: String,
     password: String,
   },
   {

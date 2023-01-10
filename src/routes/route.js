@@ -5,11 +5,11 @@ import { secret, expireIn } from "../jwt/config.js";
 import AuthMidleware from "../middleware/AuthMidleware.js";
 
 import { ProductService } from "../services/products/index.js";
-import { UserRegisterService } from "../services/users/userRegister.js";
+import { UserRegisterService } from "../services/users/userDataService/index.js";
 import { UserCheckOutService } from "../services/users/checkoutService/index.js";
 import { GetOrdersService } from "../services/users/getOrdersService/index.js";
 import { UserFavoriteService } from "../services/users/favoriteService/index.js";
-import { serializeWithBufferAndIndex } from "bson";
+
 
 const route = express.Router();
 
@@ -118,17 +118,17 @@ route.post("/login", async (req, res) => {
   return res.status(200).json({
     user: {
       id: userExist._id,
-      userName: userExist.userName,
+      name: userExist.name,
       email: userExist.email,
     },
     token: jwt.sign({ id: userExist._id }, secret, { expiresIn: expireIn }),
   });
 });
 
-// Register
+// Register User
 route.post("/register", async (req, res) => {
-  const { userName, email, password } = req.body;
-  const user = { userName, email, password };
+  const { name, email, password } = req.body;
+  const user = { name, email, password };
   user.password = await bcrypt.hash(user.password, 8);
 
   const userRegisterService = new UserRegisterService();
@@ -139,7 +139,7 @@ route.post("/register", async (req, res) => {
     return res.status(201).json({
       user: {
         id: userAdded._id,
-        userName: userAdded.userName,
+        name: userAdded.name,
         email: userAdded.email,
       },
       token: jwt.sign({ id: userAdded._id }, secret, { expiresIn: expireIn }),
@@ -160,9 +160,7 @@ route.get("/orders/:userId", AuthMidleware, async (req, res) => {
     const userOrder = await getOrdersService.getOrders(userId);
     return res.status(200).json(userOrder);
   } catch {
-    return res
-      .status(404)
-      .json({ message: "Usuário não existe em nossa base de dados" });
+    return res.status(404).json({ message: "Usuário não existe em nossa base de dados" });
   }
 });
 
@@ -173,11 +171,16 @@ route.post("/favorites", AuthMidleware, async (req, res) => {
 
   const userFavoriteService = new UserFavoriteService();
 
-  if (favorite.userId) {
+  try {
     const addFavorite = await userFavoriteService.addFavorite(favorite);
+    if(!addFavorite._id){
+      return res.status(400).json({message: 'Erro ao salvar favorito, tente novamente'})
+    }
     return res.status(201).json({ message: "Ok", addFavorite });
   }
-  return res.status(401).json({ message: "O Id de usuário é obrigatório" });
+  catch (error) {
+      return res.status(500).json({ message: 'Erro ao salvar favorito', error})
+  }
 });
 
 //Rota para obter os favoritos do usuário
@@ -191,21 +194,72 @@ route.get("/favorites/:id", AuthMidleware, async (req, res) => {
   }
 });
 
-//Rora para Deletar um favorito
+//Rota para Deletar um favorito
 route.delete("/favorites/:id", AuthMidleware, async (req, res) => {
   const { id } = req.params;
   const userFavoriteService = new UserFavoriteService();
 
-  if (id) {
+  try {
     const deleteFavorite = await userFavoriteService.deleteFavorite(id);
     if (deleteFavorite.deletedCount > 0) {
       return res.status(200).json({ message: "Favorito deletado" });
-    } else {
-      return res
-        .status(404)
-        .json({ message: "Erro ao deletar, tente mais tarde" });
     }
+    return res.status(404).json({message: 'Favorito não encontrado'})
+  } catch (error) {
+    return res.status(500).json({ message: "Erro ao deletar, tente mais tarde", error });
   }
 });
+
+//Rota para Obter um usuário
+route.get('/user/:id', AuthMidleware, async (req, res) =>{
+  const { id } = req.params
+  const userRegisterService = new UserRegisterService()
+
+  try {
+    const userExist = await userRegisterService.findById(id, '-password')
+
+    if(!userExist) {
+      return res.status(404).json({ message: 'Usuário inexistente '})
+    }
+    return res.status(200).json({ userExist })
+  } catch (error) {
+    return res.status(500).json({ error })
+  }
+}) 
+
+//Rota para Editar um usuário
+route.patch('/user/:id', AuthMidleware, async (req, res) => {
+  const { id } = req.params
+  const { name, email, cellPhone, cpf, genre} = req.body
+  const user = { name, email, cellPhone, cpf, genre}
+  const userRegisterService = new UserRegisterService()
+
+  try {
+    const userUpdated = await userRegisterService.upDate(id, user)
+    
+    if(userUpdated.matchedCount === 0){
+      return res.status(404).json({ message: 'Usuário inexistente'})
+    }
+    return res.status(200).json({ message: 'Usuário atualizado', userUpdated})
+  } catch (error) {
+      return res.status(500).json({ message: 'Usuário inexistente', error })
+  }
+})
+
+//Rota para Deletar um usuário
+route.delete('/user/:id', AuthMidleware, async (req, res) => {
+  const { id } = req.params
+  const userRegisterService = new UserRegisterService()
+
+  try {
+    const deleteUser = await userRegisterService.deleteUser(id)
+      if(deleteUser.deletedCount === 1){
+        return res.status(200).json({ message: 'Usuário deletado'})
+      }
+      return res.status(404).json({ message: 'Usuário inexistente' })
+  } catch (error) {
+    return res.status(500).json({ message: 'Erro ao deletar, tente mais tarde', error })
+  } 
+})
 
 export default route;
