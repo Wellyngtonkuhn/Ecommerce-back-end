@@ -230,8 +230,8 @@ route.get('/user/:id', AuthMidleware, async (req, res) =>{
 //Rota para Editar um usuário
 route.patch('/user/:id', AuthMidleware, async (req, res) => {
   const { id } = req.params
-  const { name, email, cellPhone, cpf, genre} = req.body
-  const user = { name, email, cellPhone, cpf, genre}
+  const { name, email, cellPhone, cpf, genre, cep, addressee, street, number, complement, city, state, reference } = req.body
+  const user = { name, email, cellPhone, cpf, genre, cep, addressee, street, number, complement, city, state, reference }
   const userRegisterService = new UserRegisterService()
 
   try {
@@ -261,5 +261,6 @@ route.delete('/user/:id', AuthMidleware, async (req, res) => {
     return res.status(500).json({ message: 'Erro ao deletar, tente mais tarde', error })
   } 
 })
+
 
 export default route;

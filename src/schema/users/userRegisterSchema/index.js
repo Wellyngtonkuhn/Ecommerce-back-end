@@ -8,6 +8,14 @@ const userRegisterSchema = new Mongoose.Schema(
     cpf: String,
     genre: String,
     password: String,
+    cep: String,
+    addressee: String,
+    street: String,
+    number: String,
+    complement: String,
+    city: String,
+    state: String,
+    reference: String
   },
   {
     collection: "user",
