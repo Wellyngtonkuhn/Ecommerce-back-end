@@ -232,8 +232,12 @@ route.patch('/user/:id', AuthMidleware, async (req, res) => {
   const { id } = req.params
   const { name, email, cellPhone, cpf, password, genre, cep, addressee, street, number, complement, district, city, state, reference } = req.body
   const user = { name, email, cellPhone, password, cpf, genre, cep, addressee, street, number, complement, district, city, state, reference }
-  user.password = await bcrypt.hash(user.password, 8);
-  const userRegisterService = new UserRegisterService()
+
+    if(user.password !== undefined){
+       user.password = await bcrypt.hash(user.password, 8);
+    }
+
+    const userRegisterService = new UserRegisterService()
 
   try {
     const userUpdated = await userRegisterService.upDate(id, user)
