@@ -230,8 +230,8 @@ route.get('/user/:id', AuthMidleware, async (req, res) =>{
 //Rota para Editar um usuário
 route.patch('/user/:id', AuthMidleware, async (req, res) => {
   const { id } = req.params
-  const { name, email, cellPhone, cpf, password, genre, cep, addressee, street, number, complement, district, city, state, reference } = req.body
-  const user = { name, email, cellPhone, password, cpf, genre, cep, addressee, street, number, complement, district, city, state, reference }
+  const { name, email, cellPhone, cpf, password, genre, cep, addressee, addresseeCpf, street, number, complement, district, city, state, reference } = req.body
+  const user = { name, email, cellPhone, password, cpf, genre, cep, addressee, addresseeCpf, street, number, complement, district, city, state, reference }
 
     if(user.password !== undefined){
        user.password = await bcrypt.hash(user.password, 8);
