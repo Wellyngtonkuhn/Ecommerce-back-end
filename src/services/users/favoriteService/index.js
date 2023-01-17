@@ -9,7 +9,7 @@ export class UserFavoriteService {
     async getFavorites(id){
         return await userFavoriteSchema.find({userId: ObjectId(id)})
     }
-
+    
     async deleteFavorite(id){
         return await userFavoriteSchema.deleteOne({_id: ObjectId(id)})
     }

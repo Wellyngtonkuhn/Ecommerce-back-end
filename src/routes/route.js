@@ -4,6 +4,8 @@ import jwt from "jsonwebtoken";
 import { secret, expireIn } from "../jwt/config.js";
 import AuthMidleware from "../middleware/AuthMidleware.js";
 
+import { calcularPrecoPrazo } from 'correios-brasil'
+
 import { ProductService } from "../services/products/index.js";
 import { UserRegisterService } from "../services/users/userDataService/index.js";
 import { UserCheckOutService } from "../services/users/checkoutService/index.js";
@@ -75,6 +77,31 @@ route.get("/products/:id", async (req, res) => {
   }
   return res.status(404).json({ message: "Produto não encontrado" });
 });
+
+// Rota para consultar os prazos e preços da entrega
+route.post('/checkout/delivery-time', AuthMidleware, async(req, res) => {
+  const cepOrigen = '05537070'
+  const { sCepDestino, nVlPeso, nCdFormato, nVlComprimento, nVlAltura, nVlLargura, nCdServico, nVlDiametro } = req.body
+  // 04014 = SEDEX à vista
+  // 04510 = PAC à vista
+  // 40169 = SEDEX12 ( à vista e a faturar)
+  let args = {
+  sCepOrigem: cepOrigen,
+  sCepDestino,
+  nVlPeso, // kilo
+  nCdFormato,
+  nVlComprimento, // centimetros
+  nVlAltura,
+  nVlLargura,
+  nCdServico,
+  nVlDiametro
+};
+
+
+calcularPrecoPrazo(args).then(response => res.status(200).json({ response })).catch(err => console.log(err))
+
+
+})
 
 //Rota de Checkout
 route.post("/checkout", AuthMidleware, async (req, res) => {
@@ -165,21 +192,27 @@ route.get("/orders/:userId", AuthMidleware, async (req, res) => {
 });
 
 //Rota para adicionar favorito
-route.post("/favorites", AuthMidleware, async (req, res) => {
+route.post("/favorites", AuthMidleware, async (req, res, next) => {
   const { userId, productId, img, name, price } = req.body;
   const favorite = { userId, productId, img, name, price };
 
   const userFavoriteService = new UserFavoriteService();
 
   try {
-    const addFavorite = await userFavoriteService.addFavorite(favorite);
-    if(!addFavorite._id){
-      return res.status(400).json({message: 'Erro ao salvar favorito, tente novamente'})
-    }
-    return res.status(201).json({ message: "Ok", addFavorite });
+    const favorites = await userFavoriteService.getFavorites(favorite?.userId);
+    const isAdded = favorites.find(item => item.productId === favorite.productId)
+      if(isAdded){
+        return res.status(401).json({ message: 'Produto já adicionado' })
+      }else{
+        const addFavorite = await userFavoriteService.addFavorite(favorite);
+        if(addFavorite._id){
+          return res.status(201).json({ message: 'Ok', addFavorite })
+        }
+        return res.status(401).json({ message: 'Erro ao salvar favorito, tente novamente' })
+      }
   }
   catch (error) {
-      return res.status(500).json({ message: 'Erro ao salvar favorito', error})
+      return console.log(error)
   }
 });
 
