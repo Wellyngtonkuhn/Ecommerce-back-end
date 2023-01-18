@@ -192,7 +192,7 @@ route.get("/orders/:userId", AuthMidleware, async (req, res) => {
 });
 
 //Rota para adicionar favorito
-route.post("/favorites", AuthMidleware, async (req, res, next) => {
+route.post("/favorites", AuthMidleware, async (req, res) => {
   const { userId, productId, img, name, price } = req.body;
   const favorite = { userId, productId, img, name, price };
 
@@ -202,7 +202,7 @@ route.post("/favorites", AuthMidleware, async (req, res, next) => {
     const favorites = await userFavoriteService.getFavorites(favorite?.userId);
     const isAdded = favorites.find(item => item.productId === favorite.productId)
       if(isAdded){
-        return res.status(401).json({ message: 'Produto já adicionado' })
+        return res.status(400).json({ message: 'Produto já adicionado' })
       }else{
         const addFavorite = await userFavoriteService.addFavorite(favorite);
         if(addFavorite._id){
@@ -212,7 +212,7 @@ route.post("/favorites", AuthMidleware, async (req, res, next) => {
       }
   }
   catch (error) {
-      return console.log(error)
+      return res.status(400).json({ error })
   }
 });
 
