@@ -1,8 +1,9 @@
-import express from "express";
+import express, { response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { secret, expireIn } from "../jwt/config.js";
 import AuthMidleware from "../middleware/AuthMidleware.js";
+import Stripe from "stripe";
 
 import { calcularPrecoPrazo } from 'correios-brasil'
 
@@ -14,6 +15,8 @@ import { UserFavoriteService } from "../services/users/favoriteService/index.js"
 
 
 const route = express.Router();
+
+const stripe = new Stripe(process.env.STRIPE_TESTE_TOKEN)
 
 route.use(
   express.urlencoded({
@@ -97,29 +100,47 @@ route.post('/checkout/delivery-time', AuthMidleware, async(req, res) => {
   nVlDiametro
 };
 
-
-calcularPrecoPrazo(args).then(response => res.status(200).json({ response })).catch(err => console.log(err))
-
-
+calcularPrecoPrazo(args)
+  .then(response => res.status(200).json({ response }))
+  .catch(err => res.status(400).json(err))
 })
 
 //Rota de Checkout
 route.post("/checkout", AuthMidleware, async (req, res) => {
-  const { userId, product, totalPrice, shipped, orderStatus, paymentStatus } =
-    req.body;
-  const orderItems = {
-    userId,
-    product,
-    totalPrice,
-    shipped,
-    orderStatus,
-    paymentStatus,
-  };
+  const { userId, product, totalPrice, shipped, orderStatus, paymentStatus, deliveryTax  } = req.body;
+  const orderItems = { userId, product, totalPrice, shipped, orderStatus, paymentStatus, deliveryTax }
 
-  const userCheckOutService = new UserCheckOutService();
-
+  const userCheckOutService = new UserCheckOutService();  
+   
   // TO DO - Implementar método de pagamento
+  // Buscar o preço diretamente do bando de dados com o id do produto
+  // Colocar a taxa de entrega no valor do stripe 
 
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: orderItems.product.map(item => {
+        return {
+          price_data: {
+            currency: "brl",
+            product_data: {
+              name: item.name,
+            },
+            unit_amount: (item.price * 100) + (deliveryTax ? deliveryTax * 100 : 0),
+            },
+            quantity: item.quantity,
+          }
+      }), 
+      success_url: process.env.PROD_SUCCESS_URL,
+      cancel_url:  process.env.PROD_CANCEL_URL
+    })
+    res.status(200).json(session)
+  } catch (error) {
+     return res.status(400).json(error)
+  } 
+
+       /* 
   if (orderItems.userId !== "") {
     try {
       const order = await userCheckOutService.createOrder(orderItems);
@@ -129,7 +150,23 @@ route.post("/checkout", AuthMidleware, async (req, res) => {
     }
   }
   return res.status(401).json({ message: "Campos obrigatórios" });
+  */
 });
+
+// Rota para checar o status do pagamento e cadastrar o pedido no banco de dados
+route.post('/checkout/webhook', async (req, res) => {
+  const event = req.body
+
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      const paymentIntent = event.data.object;
+      // Then define and call a function to handle the event payment_intent.succeeded
+      return res.json(paymentIntent)
+    default:
+     return res.json(`Unhandled event type ${event.type}`);
+  }
+
+})
 
 // Login
 route.post("/login", async (req, res) => {
