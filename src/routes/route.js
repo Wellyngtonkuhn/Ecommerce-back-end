@@ -1,4 +1,4 @@
-import express, { response } from "express";
+import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { secret, expireIn } from "../jwt/config.js";
