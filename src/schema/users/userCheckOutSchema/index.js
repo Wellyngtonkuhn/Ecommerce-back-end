@@ -8,7 +8,9 @@ const userCheckOutSchema = new Mongoose.Schema(
     shipped: String,
     orderStatus: String,
     paymentStatus: String,
-    deliveryTax: Number
+    deliveryTax: Number,
+    sessionIdPayment: String,
+    paymentId: String
   },
   {
     collection: "userOders",

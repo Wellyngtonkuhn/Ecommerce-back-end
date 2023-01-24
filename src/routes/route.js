@@ -21,11 +21,11 @@ const stripe = new Stripe(process.env.STRIPE_TESTE_TOKEN)
 route.use(
   express.urlencoded({
     extended: true,
-  })
-);
-
-route.use(express.json());
-
+  }) 
+); 
+ 
+route.use(express.json());   
+ 
 route.get("/", (req, res) => {
   res.send("Bem vindo a api de ecommerce");
 });
@@ -107,20 +107,13 @@ calcularPrecoPrazo(args)
 
 //Rota de Checkout
 route.post("/checkout", AuthMidleware, async (req, res) => {
-  const { userId, product, totalPrice, shipped, orderStatus, paymentStatus, deliveryTax  } = req.body;
-  const orderItems = { userId, product, totalPrice, shipped, orderStatus, paymentStatus, deliveryTax }
-
-  const userCheckOutService = new UserCheckOutService();  
-   
-  // TO DO - Implementar método de pagamento
-  // Buscar o preço diretamente do bando de dados com o id do produto
-  // Colocar a taxa de entrega no valor do stripe 
-
+  const { product, deliveryTax } = req.body;
+  
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
-      line_items: orderItems.product.map(item => {
+      line_items: product?.map(item => {
         return {
           price_data: {
             currency: "brl",
@@ -132,39 +125,41 @@ route.post("/checkout", AuthMidleware, async (req, res) => {
             quantity: item.quantity,
           }
       }), 
-      success_url: process.env.PROD_SUCCESS_URL,
-      cancel_url:  process.env.PROD_CANCEL_URL
+      success_url: 'https://e-commerce-seven-indol.vercel.app/congrats?sessionID={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://e-commerce-seven-indol.vercel.app/cart/payment'
     })
     res.status(200).json(session)
   } catch (error) {
      return res.status(400).json(error)
   } 
-
-       /* 
-  if (orderItems.userId !== "") {
-    try {
-      const order = await userCheckOutService.createOrder(orderItems);
-      return res.status(201).json({ message: "Pedido realizado", order });
-    } catch (err) {
-      return res.status(401).json({ message: err });
-    }
-  }
-  return res.status(401).json({ message: "Campos obrigatórios" });
-  */
 });
 
 // Rota para checar o status do pagamento e cadastrar o pedido no banco de dados
-route.post('/checkout/webhook', async (req, res) => {
-  const event = req.body
+route.post('/checkout/webhook', AuthMidleware, async (req, res) => {
+  const { userId, sessionIdPayment, product, totalPrice, deliveryTax, shipped, orderStatus, paymentStatus, paymentId } = req.body;
+  const order = { userId, sessionIdPayment, product, totalPrice, deliveryTax, shipped, orderStatus, paymentStatus, paymentId }
 
-  switch (event.type) {
-    case 'payment_intent.succeeded':
-      const paymentIntent = event.data.object;
-      // Then define and call a function to handle the event payment_intent.succeeded
-      return res.json(paymentIntent)
-    default:
-     return res.json(`Unhandled event type ${event.type}`);
-  }
+  const userCheckOutService = new UserCheckOutService();  
+
+  const session = await stripe.checkout.sessions.retrieve(sessionIdPayment);
+  order.paymentStatus = session?.payment_status === 'paid' && 'approved'
+  order.totalPrice = session?.amount_total
+  order.paymentId = session?.payment_intent
+  return res.json({session, order})
+  
+    // Realizar o cadastro do pedido no banco de dados
+
+          /*   
+    if (orderItems.userId !== "") {
+      try {
+        const order = await userCheckOutService.createOrder(orderItems);
+        return res.status(201).json({ message: "Pedido realizado", order });
+      } catch (err) {
+        return res.status(401).json({ message: err });
+      }
+    }
+    return res.status(401).json({ message: "Campos obrigatórios" });
+    */
 
 })
 
@@ -295,8 +290,8 @@ route.get('/user/:id', AuthMidleware, async (req, res) =>{
   } catch (error) {
     return res.status(500).json({ error })
   }
-}) 
-
+})  
+ 
 //Rota para Editar um usuário
 route.patch('/user/:id', AuthMidleware, async (req, res) => {
   const { id } = req.params
