@@ -125,8 +125,8 @@ route.post("/checkout", AuthMidleware, async (req, res) => {
             quantity: item.quantity,
           }
       }), 
-      success_url: 'http://localhost:3000/congrats?sessionID={CHECKOUT_SESSION_ID}',
-      cancel_url: 'http://localhost:3000/cart/payment'
+      success_url: 'https://e-commerce-seven-indol.vercel.app/congrats?sessionID={CHECKOUT_SESSION_ID}',
+      cancel_url: 'https://e-commerce-seven-indol.vercel.app/cart/payment'
     })
     res.status(200).json(session)
   } catch (error) {
