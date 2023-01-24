@@ -125,8 +125,8 @@ route.post("/checkout", AuthMidleware, async (req, res) => {
             quantity: item.quantity,
           }
       }), 
-      success_url: 'https://e-commerce-seven-indol.vercel.app/congrats?sessionID={CHECKOUT_SESSION_ID}',
-      cancel_url: 'https://e-commerce-seven-indol.vercel.app/cart/payment'
+      success_url: 'http://localhost:3000/congrats?sessionID={CHECKOUT_SESSION_ID}',
+      cancel_url: 'http://localhost:3000/cart/payment'
     })
     res.status(200).json(session)
   } catch (error) {
@@ -136,31 +136,29 @@ route.post("/checkout", AuthMidleware, async (req, res) => {
 
 // Rota para checar o status do pagamento e cadastrar o pedido no banco de dados
 route.post('/checkout/webhook', AuthMidleware, async (req, res) => {
-  const { userId, sessionIdPayment, product, totalPrice, deliveryTax, shipped, orderStatus, paymentStatus, paymentId } = req.body;
-  const order = { userId, sessionIdPayment, product, totalPrice, deliveryTax, shipped, orderStatus, paymentStatus, paymentId }
+  const { userId, sessionIdPayment, paymentId, product, totalPrice, deliveryTax, shipped, orderStatus, paymentStatus, addressed } = req.body;
+  const order = { userId, sessionIdPayment, paymentId, product, totalPrice, deliveryTax, shipped, orderStatus, paymentStatus, addressed }
 
   const userCheckOutService = new UserCheckOutService();  
 
   const session = await stripe.checkout.sessions.retrieve(sessionIdPayment);
   order.paymentStatus = session?.payment_status === 'paid' && 'approved'
-  order.totalPrice = session?.amount_total
-  order.paymentId = session?.payment_intent
-  return res.json({session, order})
-  
-    // Realizar o cadastro do pedido no banco de dados
 
-          /*   
-    if (orderItems.userId !== "") {
+  const price = `${session?.amount_total}`
+  const first = price?.slice(0, (price.length -2))
+  const final = price?.slice(-2)
+  order.totalPrice = `${first}.${final}`
+  order.paymentId = session?.payment_intent
+
+    if (session.payment_status === 'paid'){
       try {
-        const order = await userCheckOutService.createOrder(orderItems);
-        return res.status(201).json({ message: "Pedido realizado", order });
+        const newOrder = await userCheckOutService.createOrder(order);
+        return res.status(201).json({ message: "Pedido realizado", newOrder });
       } catch (err) {
         return res.status(401).json({ message: err });
       }
     }
-    return res.status(401).json({ message: "Campos obrigatórios" });
-    */
-
+    return res.status(401).json({ message: "Falha no pagamento  " });
 })
 
 // Login
