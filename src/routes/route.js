@@ -310,7 +310,7 @@ route.patch('/user/:id', AuthMidleware, async (req, res) => {
     if(userUpdated.matchedCount === 0){
       return res.status(404).json({ message: 'Usuário inexistente'})
     }
-    return res.status(200).json({ message: 'Usuário atualizado', userUpdated})
+    return res.status(200).json(userUpdated)
   } catch (error) {
       return res.status(500).json({ message: 'Usuário inexistente', error })
   }
