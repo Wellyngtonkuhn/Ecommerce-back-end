@@ -255,7 +255,7 @@ route.get("/favorites/:id", AuthMidleware, async (req, res) => {
 
   if (id) {
     const favorites = await userFavoriteService.getFavorites(id);
-    return res.status(200).json({ message: "ok", favorites });
+    return res.status(200).json(favorites);
   }
 });
 
