@@ -121,8 +121,8 @@ route.post("/checkout", AuthMidleware, async (req, res) => {
               name: item.name,
             },
             unit_amount: (item.price * 100) + (deliveryTax ? deliveryTax * 100 : 0),
-            },
-            quantity: item.quantity,
+          },
+          quantity: item.quantity,
           }
       }), 
       success_url: 'https://e-commerce-seven-indol.vercel.app/congrats?sessionID={CHECKOUT_SESSION_ID}',
@@ -139,7 +139,8 @@ route.post('/checkout/webhook', AuthMidleware, async (req, res) => {
   const { userId, sessionIdPayment, paymentId, product, totalPrice, deliveryTax, shipped, orderStatus, paymentStatus, addressed } = req.body;
   const order = { userId, sessionIdPayment, paymentId, product, totalPrice, deliveryTax, shipped, orderStatus, paymentStatus, addressed }
 
-  const userCheckOutService = new UserCheckOutService();  
+  const userCheckOutService = new UserCheckOutService();
+  const productService = new ProductService();
 
   const session = await stripe.checkout.sessions.retrieve(sessionIdPayment);
   order.paymentStatus = session?.payment_status === 'paid' && 'approved'
@@ -153,6 +154,7 @@ route.post('/checkout/webhook', AuthMidleware, async (req, res) => {
     if (session.payment_status === 'paid'){
       try {
         const newOrder = await userCheckOutService.createOrder(order);
+        // fazer o update das unidades vendidas e diminuir o estoque
         return res.status(201).json({ message: "Pedido realizado", newOrder });
       } catch (err) {
         return res.status(401).json({ message: err });
@@ -265,7 +267,7 @@ route.delete("/favorites/:id", AuthMidleware, async (req, res) => {
   try {
     const deleteFavorite = await userFavoriteService.deleteFavorite(id);
     if (deleteFavorite.deletedCount > 0) {
-      return res.status(200).json({ message: "Favorito deletado" });
+      return res.status(200).json({ message: "Favorito deletado", id });
     }
     return res.status(404).json({message: 'Favorito não encontrado'})
   } catch (error) {
